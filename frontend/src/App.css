@@ -1,0 +1,169 @@
+/* General Reset */
+body {
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Main App Container */
+.App {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header Styling */
+h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Filter Form */
+.filter-form {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  background: #ffffff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inputs and Dropdowns */
+label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+input, select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  color: #333;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* Buttons */
+button {
+  padding: 10px 15px;
+  background: #007bff;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* Chart Container */
+.chart-container {
+  background: #ffffff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+}
+
+/* Chart Wrapper */
+.chart-wrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  padding: 40px 20px;
+}
+
+/* Tooltip Container */
+.tooltip-container {
+  flex-basis: 30%;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-container h4 {
+  margin-bottom: 15px;
+}
+
+/* Filter Input */
+.filter-input {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Apply Filters Button */
+.apply-filters {
+  grid-column: span 4;
+  text-align: center;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.apply-filters:hover {
+  background-color: #0056b3;
+}
+
+.suggestion-list-container {
+  position: absolute;
+  top: 100%; /* Aligns directly below the input */
+  left: 0;
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 5px;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Suggestion Item */
+.suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: #f1f1f1;
+}
