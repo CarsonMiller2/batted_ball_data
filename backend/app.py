@@ -12,6 +12,8 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 
 # Configuration
+cwd=os.getcwd()
+print(f"CWD: {cwd}")
 DB_PATH = os.getenv("DB_PATH", "../data/BattedBallData.db")
 DATA_PATH = os.getenv("DATA_PATH", "../data/BattedBallData.xlsx")
 

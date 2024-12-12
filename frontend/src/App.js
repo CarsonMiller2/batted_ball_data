@@ -1,8 +1,12 @@
-import React, { useEffect, useState, useCallback, useMemo, useRef, containerRef } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
-import { FixedSizeList } from "react-window";
 import './App.css';
+
+import TabNavigation from "./TabNavigation";
+import AllBattedBallsChart from "./charts/AllBattedBallsChart";
+import ScatterPlots from "./charts/ScatterPlots";
+import HeatmapChart from "./charts/HeatmapChart";
+import SprayChart from "./charts/SprayChart";
 
 const debounce = (func, delay) => {
   let timeout;
@@ -49,22 +53,18 @@ function getPrefixSuggestions(arr, prefix) {
   return arr.slice(start, end).slice(0, 5);
 }
 
-// Abstracted input component for filters
 const FilterInput = ({ label, type, value, onChange, options, suggestions, onSelect }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const containerRef = useRef(null);
 
   const handleFocus = () => setShowSuggestions(true);
 
-  // Close the suggestions box if the user clicks outside of the text box. Does not work and it's very minor but very annoying
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         setShowSuggestions(false);
       }
     };
-
-    // Listen for mousedown events to capture clicks
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -86,7 +86,9 @@ const FilterInput = ({ label, type, value, onChange, options, suggestions, onSel
         <input
           type={type}
           value={value}
-          onChange={(e) => onChange(type === "number" ? Number(e.target.value) : e.target.value)}
+          onChange={(e) =>
+            onChange(type === "number" ? Number(e.target.value) : e.target.value)
+          }
           onFocus={handleFocus}
         />
       )}
@@ -127,90 +129,6 @@ const SuggestionList = React.memo(({ suggestions, onSelect }) => {
   );
 });
 
-const MyChart = React.memo(({ data }) => {
-  const [hoveredPoint, setHoveredPoint] = useState(null);
-
-  const handleMouseOver = useMemo(
-    () => debounce((payload) => setHoveredPoint(payload), 100),
-    []
-  );
-
-  return (
-    <div className="chart-wrapper">
-      <div className="chart-container">
-        <ScatterChart
-          width={700}
-          height={500}
-          margin={{ top: 30, right: 20, bottom: 80, left: 80 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="LAUNCH_ANGLE"
-            name="Launch Angle"
-            unit="°"
-            type="number"
-            domain={[-90, 90]}
-            label={{ value: "Launch Angle (°)", position: "insideBottomCenter", dy: 10 }}
-          />
-          <YAxis
-            dataKey="EXIT_SPEED"
-            name="Exit Speed"
-            unit="mph"
-            type="number"
-            domain={[0, 120]}
-            label={{ value: "Exit Speed (mph)", angle: -90, position: "insideLeftCenter", dx: -50 }}
-          />
-          <Scatter
-            name="Batted Balls"
-            data={data}
-            fill="#8884d8"
-            opacity={0.7}
-            size={4}
-            onMouseOver={(e) => e && handleMouseOver(e.payload)}
-            onMouseOut={() => setHoveredPoint(null)}
-            shape={(props) => (
-              <circle
-                cx={props.cx}
-                cy={props.cy}
-                r={
-                  hoveredPoint &&
-                  hoveredPoint.LAUNCH_ANGLE === props.payload.LAUNCH_ANGLE &&
-                  hoveredPoint.EXIT_SPEED === props.payload.EXIT_SPEED
-                    ? 8
-                    : 4
-                }
-                fill={
-                  hoveredPoint &&
-                  hoveredPoint.LAUNCH_ANGLE === props.payload.LAUNCH_ANGLE &&
-                  hoveredPoint.EXIT_SPEED === props.payload.EXIT_SPEED
-                    ? "#ff4757"
-                    : "#8884d8"
-                }
-                opacity={hoveredPoint ? 1 : 0.7}
-              />
-            )}
-          />
-        </ScatterChart>
-      </div>
-
-      <div className="tooltip-container">
-        <h4>Data Point Details</h4>
-        {hoveredPoint ? (
-          <div>
-            <p><strong>Batter:</strong> {hoveredPoint.BATTER}</p>
-            <p><strong>Pitcher:</strong> {hoveredPoint.PITCHER}</p>
-            <p><strong>Launch Angle:</strong> {hoveredPoint.LAUNCH_ANGLE.toFixed(2)}°</p>
-            <p><strong>Exit Speed:</strong> {hoveredPoint.EXIT_SPEED.toFixed(2)} mph</p>
-            <p><strong>Outcome:</strong> {hoveredPoint.PLAY_OUTCOME || "N/A"}</p>
-          </div>
-        ) : (
-          <p>Hover over a point to see details.</p>
-        )}
-      </div>
-    </div>
-  );
-});
-
 function App() {
   const [data, setData] = useState([]);
   const [filter, setFilter] = useState({
@@ -225,6 +143,7 @@ function App() {
 
   const [allHitters, setAllHitters] = useState([]);
   const [allPitchers, setAllPitchers] = useState([]);
+  const [selectedTab, setSelectedTab] = useState("All Batted Balls"); // Default tab
 
   useEffect(() => {
     async function loadData() {
@@ -237,15 +156,22 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Load initial data when the component mounts
-    axios
+    axios 
       .get("http://127.0.0.1:5000/api/data")
       .then((response) => setData(response.data))
       .catch((error) => console.error("Error loading initial data:", error));
   }, []);
 
   const fetchFilteredData = useCallback(() => {
-    const params = new URLSearchParams(filter);
+    const params = new URLSearchParams({
+      hitter: filter.hitter,
+      pitcher: filter.pitcher,
+      minExitSpeed: filter.minExitSpeed,
+      maxExitSpeed: filter.maxExitSpeed,
+      minLaunchAngle: filter.minLaunchAngle,
+      maxLaunchAngle: filter.maxLaunchAngle,
+      playOutcome: filter.playOutcome,
+    });
     axios
       .get(`http://127.0.0.1:5000/api/data?${params.toString()}`)
       .then((response) => setData(response.data))
@@ -255,9 +181,25 @@ function App() {
   const filteredHitterSuggestions = getPrefixSuggestions(allHitters, filter.hitter);
   const filteredPitcherSuggestions = getPrefixSuggestions(allPitchers, filter.pitcher);
 
+  let content;
+  if (selectedTab === "All Batted Balls") {
+    content = <AllBattedBallsChart data={data} />;
+  } else if (selectedTab === "Scatter Plots") {
+    content = <ScatterPlots data={data} />;
+  } else if (selectedTab === "Heatmaps") {
+    content = <HeatmapChart data={data} />;
+  } else if (selectedTab === "Spray Chart") {
+    content = <SprayChart data={data} />;
+  }
+
   return (
     <div className="App">
       <h1>Batted Ball Visualizer</h1>
+      <TabNavigation
+        tabs={["All Batted Balls", "Scatter Plots", "Heatmaps", "Spray Chart"]}
+        selectedTab={selectedTab}
+        onTabSelect={setSelectedTab}
+      />
       <form className="filter-form">
         <div className="filter-group">
           <FilterInput
@@ -265,8 +207,6 @@ function App() {
             type="text"
             value={filter.hitter}
             onChange={(value) => setFilter({ ...filter, hitter: value })}
-          />
-          <SuggestionList
             suggestions={filteredHitterSuggestions}
             onSelect={(name) => setFilter({ ...filter, hitter: name })}
           />
@@ -278,17 +218,10 @@ function App() {
             type="text"
             value={filter.pitcher}
             onChange={(value) => setFilter({ ...filter, pitcher: value })}
-          />
-          <SuggestionList
             suggestions={filteredPitcherSuggestions}
             onSelect={(name) => setFilter({ ...filter, pitcher: name })}
           />
         </div>
-
-        <SuggestionList
-          suggestions={filteredPitcherSuggestions}
-          onSelect={(name) => setFilter({ ...filter, pitcher: name })}
-        />
 
         <FilterInput
           label="Min Exit Speed"
@@ -331,7 +264,7 @@ function App() {
         </button>
       </form>
 
-      <MyChart data={data} />
+      {content}
     </div>
   );
 }
