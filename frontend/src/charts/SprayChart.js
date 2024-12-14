@@ -38,9 +38,11 @@ const SprayChart = ({ data }) => {
   };
   
 
+  // Keep track of current field
   const [selectedField, setSelectedField] = useState("Truist Park (Braves)");
 
   useEffect(() => {
+    // Set up SVG stuff
     const fieldWidth = 700;
     const fieldHeight = 500;
     const svgWidth = 1000;
@@ -52,13 +54,16 @@ const SprayChart = ({ data }) => {
   
     svg.selectAll("*").remove();
   
+    // I eyeballed the location of home plate
     const homePlateX = svgWidth / 2 - 3;
     const homePlateY = svgHeight - 145;
   
+    // Again, not actually using LF and RF
     const { LF, CF, RF } = fieldDimensions[selectedField];
     const fieldRadiusFeet = CF;
     const scale = (fieldHeight - 50) / fieldRadiusFeet;
   
+    // Transform the input data into coordinates scaled to the field dimensions
     const points = data
       .map((d) => {
         if (d.EXIT_DIRECTION == null || d.HIT_DISTANCE == null) return null;
@@ -74,6 +79,7 @@ const SprayChart = ({ data }) => {
       })
       .filter(Boolean);
   
+    // Turn the data points into circles
     svg.selectAll("circle")
       .data(points)
       .enter()
@@ -88,12 +94,13 @@ const SprayChart = ({ data }) => {
           window.open(d.VIDEO_LINK, "_blank");
         }
       })
-      .append("title")
+      .append("title") //Tooltips should admittedly be consistent between pages of the site
       .text(
         (d) =>
           `Batter: ${d.BATTER}\nPitcher: ${d.PITCHER}\nDistance: ${d.HIT_DISTANCE} ft\nOutcome: ${d.PLAY_OUTCOME}`
       );
   
+    // The circle represents the home plate location
     svg.append("circle")
       .attr("cx", homePlateX)
       .attr("cy", homePlateY)
@@ -101,7 +108,6 @@ const SprayChart = ({ data }) => {
       .attr("fill", "blue");
   }, [data, selectedField]);
   
-
   return (
     <div style={{ position: "relative", width: "1000px", margin: "0 auto", padding: "20px" }}>
       <div
@@ -112,6 +118,7 @@ const SprayChart = ({ data }) => {
           textAlign: "center",
         }}
       >
+        {/* field selection */}
         <p>Select an MLB field to adjust the spray chart:</p>
         <select
           value={selectedField}
@@ -126,6 +133,7 @@ const SprayChart = ({ data }) => {
         </select>
       </div>
 
+      {/* field image */}
       <div style={{ position: "relative", width: "1000px", height: "600px" }}>
         <img
           src="field.png"

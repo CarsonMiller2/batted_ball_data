@@ -11,12 +11,13 @@ CORS(app)
 
 logging.basicConfig(level=logging.INFO)
 
-cwd=os.getcwd()
-print(f"CWD: {cwd}")
 DB_PATH = os.getenv("DB_PATH", "../data/BattedBallData.db")
 DATA_PATH = os.getenv("DATA_PATH", "../data/BattedBallData.xlsx")
 
 def ensure_database_exists():
+    """
+    Ensure the SQLite database exists. If not, create it from the Excel file
+    """
     try:
         if not os.path.exists(DATA_PATH):
             logging.error(f"Data file missing: {DATA_PATH}")
@@ -24,6 +25,8 @@ def ensure_database_exists():
 
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
+
+            # Check if the table exists
             cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='batted_ball_data';")
             table_exists = cur.fetchone()
 
@@ -45,6 +48,9 @@ def ensure_database_exists():
 ensure_database_exists()
 
 def build_filter_query(filter_name, filter_value, param_list):
+    """
+    Dynamically build SQL query filters based on request parameters
+    """
     if filter_value:
         query_part = f" AND LOWER({filter_name}) LIKE ?"
         param_list.append(f"%{filter_value.strip().lower()}%")
@@ -53,10 +59,16 @@ def build_filter_query(filter_name, filter_value, param_list):
 
 @app.before_request
 def start_timer():
+    """
+    Record the start time of a request for logging
+    """
     g.start = time.time()
 
 @app.after_request
 def log_request(response):
+    """
+    Log details about each request after it completes
+    """
     duration = time.time() - g.start
     status_code = response.status_code
     logging.info(f"{request.method} {request.path} completed in {duration:.3f}s with status {status_code}")
@@ -64,6 +76,10 @@ def log_request(response):
 
 @app.route("/api/data", methods=["GET"])
 def get_data():
+    """
+    Endpoint to fetch filtered batted ball data based on query parameters
+    """
+    # Extract and sanitize query parameters.
     try:
         hitter = request.args.get('hitter', '').strip().lower()
         pitcher = request.args.get('pitcher', '').strip().lower()
@@ -73,6 +89,7 @@ def get_data():
         max_launch_angle = float(request.args.get('maxLaunchAngle', 90))
         play_outcome = request.args.get('playOutcome', 'All').lower()
 
+         # Base SQL query
         query = """
             SELECT BATTER, PITCHER, GAME_DATE, LAUNCH_ANGLE, EXIT_SPEED,
                    EXIT_DIRECTION, HIT_DISTANCE, PLAY_OUTCOME, VIDEO_LINK
@@ -82,6 +99,7 @@ def get_data():
         """
         params = [min_exit_speed, max_exit_speed, min_launch_angle, max_launch_angle]
 
+        # Dynamically add filters
         query += build_filter_query("BATTER", hitter, params)
         query += build_filter_query("PITCHER", pitcher, params)
 
@@ -89,11 +107,13 @@ def get_data():
             query += " AND LOWER(PLAY_OUTCOME) = ?"
             params.append(play_outcome)
 
+        # Execute the query
         with sqlite3.connect(DB_PATH) as conn:
             cur = conn.cursor()
             cur.execute(query, params)
             results = cur.fetchall()
-
+        
+        # Map query results to a list of dictionaries for JSON response
         columns = ["BATTER", "PITCHER", "GAME_DATE", "LAUNCH_ANGLE", "EXIT_SPEED", "EXIT_DIRECTION", "HIT_DISTANCE", "PLAY_OUTCOME", "VIDEO_LINK"]
         filtered_data = [dict(zip(columns, row)) for row in results]
 
@@ -103,4 +123,5 @@ def get_data():
         return jsonify({"error": "An error occurred while processing your request."}), 500
 
 if __name__ == "__main__":
-    app.run(debug=False)  # Running with Gunicorn on EC2
+    # Running with Gunicorn on prod
+    app.run(debug=False)
