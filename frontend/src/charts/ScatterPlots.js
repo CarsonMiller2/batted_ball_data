@@ -15,6 +15,7 @@ const ScatterPlots = ({ data }) => {
     (d) => d.LAUNCH_ANGLE !== null && d.EXIT_SPEED !== null && d.HIT_DISTANCE !== null
   );
 
+  // Dataset for Launch Angle vs Exit Velocity
   const launchAngleExitVelo = {
     datasets: [
       {
@@ -28,6 +29,7 @@ const ScatterPlots = ({ data }) => {
     ],
   };
 
+  // Dataset for Exit Speed vs Hit Distance
   const exitSpeedHitDistance = {
     datasets: [
       {
@@ -41,6 +43,7 @@ const ScatterPlots = ({ data }) => {
     ],
   };
 
+  // Chart options
   const optionsLaunchAngleExitVelo = {
     scales: {
       x: {
@@ -66,6 +69,7 @@ const ScatterPlots = ({ data }) => {
     },
   };
 
+  // Chart options
   const optionsExitSpeedHitDistance = {
     scales: {
       x: {

@@ -8,6 +8,7 @@ import ScatterPlots from "./charts/ScatterPlots";
 import HeatmapChart from "./charts/HeatmapChart";
 import SprayChart from "./charts/SprayChart";
 
+// TODO: abstract out debounce
 const debounce = (func, delay) => {
   let timeout;
   return (...args) => {
@@ -16,7 +17,7 @@ const debounce = (func, delay) => {
   };
 };
 
-// Binary search utilities
+// Binary search utilities for loading hitter/pitcher suggestions
 function lowerBound(arr, prefix) {
   let left = 0;
   let right = arr.length;
@@ -50,7 +51,7 @@ function getPrefixSuggestions(arr, prefix) {
   prefix = prefix.toLowerCase();
   const start = lowerBound(arr, prefix);
   const end = upperBound(arr, prefix + '\uffff');
-  return arr.slice(start, end).slice(0, 5);
+  return arr.slice(start, end).slice(0, 5); // Return first 5 suggestions
 }
 
 const FilterInput = ({ label, type, value, onChange, options, suggestions, onSelect }) => {
@@ -59,6 +60,8 @@ const FilterInput = ({ label, type, value, onChange, options, suggestions, onSel
 
   const handleFocus = () => setShowSuggestions(true);
 
+  // Close suggestion list if clicked outside the input container
+  // I spent far too much time on this and it doesn't even work
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -112,6 +115,7 @@ const FilterInput = ({ label, type, value, onChange, options, suggestions, onSel
   );
 };
 
+// Pitcher and hitter text box suggestions
 const SuggestionList = React.memo(({ suggestions, onSelect }) => {
   if (!suggestions || suggestions.length === 0) return null;
   return (
@@ -130,7 +134,7 @@ const SuggestionList = React.memo(({ suggestions, onSelect }) => {
 });
 
 function App() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // Store the fetched data
   const [filter, setFilter] = useState({
     hitter: "",
     pitcher: "",
@@ -145,6 +149,7 @@ function App() {
   const [allPitchers, setAllPitchers] = useState([]);
   const [selectedTab, setSelectedTab] = useState("All Batted Balls"); // Default tab
 
+  // Load JSON files on initial page load
   useEffect(() => {
     async function loadData() {
       const hittersRes = await fetch("/hitters.json").then((r) => r.json());
@@ -155,6 +160,7 @@ function App() {
     loadData();
   }, []);
 
+  // Load initial batted ball data
   useEffect(() => {
     axios 
       .get("http://127.0.0.1:5000/api/data")
@@ -162,6 +168,7 @@ function App() {
       .catch((error) => console.error("Error loading initial data:", error));
   }, []);
 
+  // Apply filters and load new data
   const fetchFilteredData = useCallback(() => {
     const params = new URLSearchParams({
       hitter: filter.hitter,
@@ -181,6 +188,7 @@ function App() {
   const filteredHitterSuggestions = getPrefixSuggestions(allHitters, filter.hitter);
   const filteredPitcherSuggestions = getPrefixSuggestions(allPitchers, filter.pitcher);
 
+  // Choose tab
   let content;
   if (selectedTab === "All Batted Balls") {
     content = <AllBattedBallsChart data={data} />;

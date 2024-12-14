@@ -1,6 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid } from "recharts";
 
+// TODO: Change this scatter to use ChartJS
+
+// Debounce function to limit the frequency of calls to `func`
+// Helps optimize hover events and avoid excessive state updates
 const debounce = (func, delay) => {
   let timeout;
   return (...args) => {
@@ -12,11 +16,14 @@ const debounce = (func, delay) => {
 const AllBattedBallsChart = React.memo(({ data }) => {
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
+  // Memoized hover with debouncing
+  // There are too many data points to do this without the delay
   const handleMouseOver = useMemo(
     () => debounce((payload) => setHoveredPoint(payload), 100),
     []
   );
 
+  // On click, open video link in new tab. assumes there is a valid VIDEO_LINK
   const handleClick = (point) => {
     if (point.VIDEO_LINK) {
       window.open(point.VIDEO_LINK, "_blank");
@@ -26,12 +33,15 @@ const AllBattedBallsChart = React.memo(({ data }) => {
   return (
     <div className="chart-wrapper">
       <div className="chart-container">
+        {/* plot all data on scatter chart */}
         <ScatterChart
           width={700}
           height={500}
           margin={{ top: 30, right: 20, bottom: 80, left: 80 }}
         >
+          {/*put a grid on the chart*/}
           <CartesianGrid strokeDasharray="3 3" />
+          {/* X axis configuration for launch angle*/}
           <XAxis
             dataKey="LAUNCH_ANGLE"
             name="Launch Angle"
@@ -40,6 +50,7 @@ const AllBattedBallsChart = React.memo(({ data }) => {
             domain={[-90, 90]}
             label={{ value: "Launch Angle (°)", position: "insideBottomCenter", dy: 10 }}
           />
+          {/* Y axis configuration for exit speed*/}
           <YAxis
             dataKey="EXIT_SPEED"
             name="Exit Speed"
