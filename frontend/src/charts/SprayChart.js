@@ -126,7 +126,6 @@ const SprayChart = ({ data }) => {
         </select>
       </div>
 
-      {/* Spray Chart */}
       <div style={{ position: "relative", width: "1000px", height: "600px" }}>
         <img
           src="field.png"

@@ -11,7 +11,6 @@ CORS(app)
 
 logging.basicConfig(level=logging.INFO)
 
-# Configuration
 cwd=os.getcwd()
 print(f"CWD: {cwd}")
 DB_PATH = os.getenv("DB_PATH", "../data/BattedBallData.db")
@@ -34,7 +33,7 @@ def ensure_database_exists():
                 df.to_sql("batted_ball_data", conn, if_exists="replace", index=False)
                 logging.info("Database created successfully.")
 
-            # Ensure indexes on frequently queried columns
+            # Index on frequently queried columns
             cur.execute("CREATE INDEX IF NOT EXISTS idx_batter ON batted_ball_data (BATTER);")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_pitcher ON batted_ball_data (PITCHER);")
             cur.execute("CREATE INDEX IF NOT EXISTS idx_exit_speed ON batted_ball_data (EXIT_SPEED);")
@@ -104,4 +103,4 @@ def get_data():
         return jsonify({"error": "An error occurred while processing your request."}), 500
 
 if __name__ == "__main__":
-    app.run(debug=False)  # Run without debug to speed up a bit
+    app.run(debug=False)  # Running with Gunicorn on EC2

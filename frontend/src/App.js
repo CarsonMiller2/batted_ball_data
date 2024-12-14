@@ -184,19 +184,32 @@ function App() {
   let content;
   if (selectedTab === "All Batted Balls") {
     content = <AllBattedBallsChart data={data} />;
-  } else if (selectedTab === "Scatter Plots") {
-    content = <ScatterPlots data={data} />;
+  } else if (selectedTab === "README") {
+    content = (
+      <div className="readme-content">
+        <p>
+          Thanks for giving me a chance to show what I can do. I spent more time on optimizing some of these queries than I did on 
+          making the site look pretty. On the client side, I've implemented some caching and a binary search on the player lists. On 
+          the server side, I have a SQLite database optimized with indexes on frequently queried fields like BATTER and PITCHER. I spent 
+          a lot of time learning how to do little things like debouncing, since there are over 7000 data points and it was running slowly. 
+          Thanks again!
+        </p>
+      </div>);
   } else if (selectedTab === "Heatmaps") {
     content = <HeatmapChart data={data} />;
   } else if (selectedTab === "Spray Chart") {
     content = <SprayChart data={data} />;
+  } else if (selectedTab === "Scatter Plots") {
+    content = <ScatterPlots data={data} />;
   }
+  
+  
 
   return (
     <div className="App">
       <h1>Batted Ball Visualizer</h1>
       <TabNavigation
-        tabs={["All Batted Balls", "Scatter Plots", "Heatmaps", "Spray Chart"]}
+        tabs={["All Batted Balls", "README", "Spray Chart", "Scatter Plots", "Heatmaps"]}
         selectedTab={selectedTab}
         onTabSelect={setSelectedTab}
       />

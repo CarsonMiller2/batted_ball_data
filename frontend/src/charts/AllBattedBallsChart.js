@@ -75,7 +75,7 @@ const AllBattedBallsChart = React.memo(({ data }) => {
                     : "#8884d8"
                 }
                 opacity={hoveredPoint ? 1 : 0.7}
-                onClick={() => handleClick(props.payload)} // Handle click on the point
+                onClick={() => handleClick(props.payload)}
                 style={{ cursor: "pointer" }}
               />
             )}
